@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/kendo.common.min.css">
+    <link rel="stylesheet" href="css/kendo.default.min.css">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jquery.jeditable.js"></script>
+    <script src="js/kendo.all.min.js"></script>
+</head>
+<body>
+<button id="appendNodeToSelected">add</button>
+<div id="treeview"></div>
+<script>
+
+    var myTree = [{
+        name: "Company 1", sum: "55k", sumCh: "74k", items: [
+            {name: "Company 1.1", sum: "12k"}, {
+                name: "Company 1.2", sum: "10k", sumCh: "44k", items: [
+                    {name: "Company 1.2.1", sum: "12k"}, {name: "Company 1.2.2", sum: "10k"}
+                ]
+            }
+        ]
+    }, {
+        name: "Company 2", sum: "33k", sumCh: "45k", items: [
+            {name: "Company 2.1", sum: "12k"}]
+    }, {
+        name: "Company 3", sum: "74k", sumCh: "55k", items: [
+            {name: "Company 3.1", sum: "12k"}]
+    }];
+
+    $("#treeview").kendoTreeView({
+        dataSource: myTree,
+        template: '<span class="editable">#: item.name #</span> | <span class="editable">#: item.sum #</span> |  # if (item.sumCh) { # <span class="editable">#: item.sumCh #</span> # } # <button class="delete-link">delete</button>'
+    });
+
+    // Jeditable
+    $(document).ready(function () {
+        $('.editable').editable(function (value, settings) {
+            return (value);
+        }, {
+            type: 'textarea',
+            submit: 'OK'
+        });
+    });
+
+    // Delete button behavior
+    $(document).on("click", ".delete-link", function (e) {
+        e.preventDefault();
+        var treeview = $("#treeview").data("kendoTreeView");
+        treeview.remove($(this).closest(".k-item"));
+    });
+
+    // Add button behavior
+    var handleTextBox = function (callback) {
+        return function (e) {
+            if (e.type != "keypress" || kendo.keys.ENTER == e.keyCode) {
+                callback(e);
+            }
+        };
+    };
+
+    var append = handleTextBox(function (e) {
+        var treeview = $("#treeview").data("kendoTreeView");
+        var selectedNode = treeview.select();
+        if (selectedNode.length == 0) {
+            selectedNode = null;
+        }
+
+        treeview.append({
+            name: "Company", sum: "0k"
+        }, selectedNode, function () {
+            $('.editable').editable(function (value, settings) {
+                return (value);
+            }, {
+                type: 'textarea',
+                submit: 'OK'
+            })
+        });
+
+    });
+
+    $("#appendNodeToSelected").click(append);
+</script>
+
+</body>
+</html>
